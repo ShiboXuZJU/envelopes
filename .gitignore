@@ -1,0 +1,13 @@
+*.pyd
+*.exp
+*.lib
+*.obj
+*.pyc
+*.whl
+*.egg-info
+*.gz
+
+
+\.pytest_cache
+\.vscode
+\.build
