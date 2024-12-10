@@ -14,13 +14,7 @@ envelopes = Extension('envelopes.envelopes_cpp',
                       libraries=['src/libcerf/cerfcpp'],
                       extra_compile_args=['/std:c++17'])
 
-setup(name='envelopes',
-      author="Shibo Xu",
-      author_email="sbxu@zju.edu.cn",
-      version=__version__,
-      description="Envelops impelemented both in C++ and python.",
-      requires=["numpy", "scipy"],
-      packages=['envelopes'],
+setup(packages=['envelopes'],
       ext_modules=[envelopes],
       include_package_data=True,
       package_data={"envelopes": ["*.dll", "*.pyi"]})

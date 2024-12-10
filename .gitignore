@@ -10,4 +10,4 @@
 
 \.pytest_cache
 \.vscode
-\.build
+\build

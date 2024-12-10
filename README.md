@@ -3,6 +3,10 @@
 High performance tools for building and decoding envelopes used in superconducting quantum qubit experiments.
 
 # Installation
+```bash
+pip install envelopes-qc
+```
+ Or
 1. Cloning the repository to your machine.
 2. Installing envelopes using pip locally by the following command:
 ```bash
