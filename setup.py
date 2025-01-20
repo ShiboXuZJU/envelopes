@@ -1,8 +1,6 @@
 from setuptools import setup, Extension
 import pybind11
 
-__version__ = '0.0.1'
-
 envelopes = Extension('envelopes.envelopes_cpp',
                       sources=['src/bind.cpp'],
                       include_dirs=[pybind11.get_include()],
