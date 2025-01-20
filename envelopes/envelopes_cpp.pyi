@@ -63,8 +63,8 @@ class EnvSum(AbstractEnvelope):
     ...
 
 
-def decode_envelope(wc: WaveCache,
-                    resolution: float,
+def decode_envelope(env: AbstractEnvelope,
+                    wc: WaveCache,
                     start: Optional[float] = None,
                     end: Optional[float] = None) -> tuple[float, VectorBuffer]:
     ...
