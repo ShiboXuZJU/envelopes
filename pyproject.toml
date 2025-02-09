@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "envelopes-qc"
-version = "0.0.3"
+version = "0.0.4"
 description = "Envelops impelemented by C++ and Python."
 authors = [{name = "Shibo Xu", email = "sbxu@zju.edu.cn"}]
 readme = "README.md"
