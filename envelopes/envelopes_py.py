@@ -11,6 +11,7 @@ from scipy.special import erf
 class LazyArray:
     '''
     To avoid repeated multiplication on array.
+    NOTE this implementation differs from that in "envelopes_cpp" which is more efficient.
     '''
     __slots__ = ('c', 'array')
 
@@ -670,6 +671,55 @@ def align(env: AbstractEnvelope,
         result = EnvSum()
         result.items = [(env >> dt_) * amp_ for dt_, amp_ in zip(dt, amp)]
         return result
+
+
+def split(env: AbstractEnvelope, starts: List[float],
+          ends: List[float]) -> List[AbstractEnvelope]:
+    """
+    Split env according to starts and ends.
+    The provided starts and ends must be pre-sorted and have the same length.
+    """
+    splitted_envs = []
+    if len(starts) == 1:
+        if env.start < starts[0] or ends[0] < env.end:
+            raise RuntimeError(
+                f'env:start={env.start} end={env.end}\nblock:start={starts[0]} end={ends[0]}\nblock can not cover the envelope!'
+            )
+        splitted_envs.append(env)
+    else:
+        splitted_envs = [EnvSum() for _ in range(len(starts))]
+        if isinstance(env, EnvSum):
+            for _item in env.items:
+                found = False
+                for splitted_env, start, end in zip(splitted_envs, starts,
+                                                    ends):
+                    if _item.start >= start and _item.end <= end:
+                        splitted_env += _item
+                        found = True
+                    elif (_item.start < start <
+                          _item.end) or (_item.start < end < _item.end):
+                        raise RuntimeError(
+                            f'env:start={_item.start} end={_item.end}\nblock:start={start} end={end}\nblock can not cover the envelope!'
+                        )
+                if not found:
+                    raise RuntimeError("There is env not in any block!")
+        else:
+            found = False
+            for splitted_env, start, end in zip(splitted_envs, starts, ends):
+                if env.start >= start and env.end <= end:
+                    splitted_env += env
+                    found = True
+                elif (env.start < start < env.end) or (env.start < end <
+                                                       env.end):
+                    raise RuntimeError(
+                        f'env:start={env.start} end={env.end}\nblock:start={start} end={end}\nblock can not cover the envelope!'
+                    )
+            if not found:
+                raise RuntimeError("There is env not in any block!")
+        for splitted_env, start in zip(splitted_envs, starts):
+            if len(splitted_env.items) == 0:
+                splitted_env += Rect(start, 0.0, 0.0)
+    return splitted_envs
 
 
 # ------- decode envelope -----

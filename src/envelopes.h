@@ -1107,8 +1107,10 @@ SP<AbstractEnvelope> mix(SP<AbstractEnvelope> &env, double df, double phase, boo
         break;
     }
     default:
+    {
         result = std::make_shared<EnvMix>(env, df, phase, dynamical);
         break;
+    }
     }
     return result;
 }
@@ -1129,12 +1131,14 @@ SP<AbstractEnvelope> align(SP<AbstractEnvelope> &env, VEC<double> &dt)
         break;
     }
     default:
+    {
         result->envs.reserve(dt.size());
         for (auto &dt_ : dt)
         {
             result->envs.push_back((*env) >> dt_);
         }
         break;
+    }
     }
     return result;
 }
@@ -1144,7 +1148,7 @@ SP<AbstractEnvelope> align(SP<AbstractEnvelope> &env, VEC<double> &dt, VEC<T> &a
 {
     if (dt.size() != amp.size())
     {
-        throw std::runtime_error("dt and amp should have the same size.");
+        throw std::runtime_error("dt and amp must have the same size.");
     }
     EnvType et = env->type_;
     SP<EnvSum> result = std::make_shared<EnvSum>();
@@ -1160,6 +1164,7 @@ SP<AbstractEnvelope> align(SP<AbstractEnvelope> &env, VEC<double> &dt, VEC<T> &a
         break;
     }
     default:
+    {
         result->envs.reserve(dt.size());
         for (size_t i = 0; i < dt.size(); i++)
         {
@@ -1167,7 +1172,106 @@ SP<AbstractEnvelope> align(SP<AbstractEnvelope> &env, VEC<double> &dt, VEC<T> &a
         }
         break;
     }
+    }
     return result;
+}
+
+SP<VEC<SP<AbstractEnvelope>>> split(SP<AbstractEnvelope> &env, VEC<double> &starts, VEC<double> &ends)
+{
+    if (starts.size() != ends.size())
+    {
+        throw std::runtime_error("starts and ends must have the same size.");
+    }
+    SP<VEC<SP<AbstractEnvelope>>> splittedEnvs = std::make_shared<VEC<SP<AbstractEnvelope>>>(starts.size());
+    if (starts.size() == 1)
+    {
+        if (env->start() < starts[0] || ends[0] < env->end())
+        {
+            throw std::runtime_error("Block can not cover the envelope!");
+        }
+        (*splittedEnvs)[0] = env;
+    }
+    else
+    {
+        for (auto &env_ : *splittedEnvs)
+        {
+            env_ = std::make_shared<EnvSum>();
+        }
+        EnvType et = env->type_;
+        switch (et)
+        {
+        case EnvType::ENVSUM:
+        {
+            SP<EnvSum> envSum = std::dynamic_pointer_cast<EnvSum>(env);
+            for (auto &env_ : envSum->envs)
+            {
+                bool found = false;
+                for (size_t i = 0; i < starts.size(); i++)
+                {
+                    if (env_->start() >= starts[i] && env_->end() <= ends[i])
+                    {
+                        *(*splittedEnvs)[i] += env_;
+                        found = true;
+                    }
+                    else if ((env_->start() < starts[i] && starts[i] <
+                                                               env_->end()) ||
+                             (env_->start() < ends[i] && ends[i] < env_->end()))
+                    {
+                        throw std::runtime_error("Block can not cover the envelope! Block edge falls in env duration.");
+                    }
+                }
+                if (!found)
+                {
+                    throw std::runtime_error("There is env not in any block!");
+                }
+            }
+            break;
+        }
+        default:
+        {
+            bool found = false;
+            for (size_t i = 0; i < starts.size(); i++)
+            {
+                if (env->start() >= starts[i] && env->end() <= ends[i])
+                {
+                    *(*splittedEnvs)[i] += env;
+                    found = true;
+                }
+                else if ((env->start() < starts[i] && starts[i] <
+                                                          env->end()) ||
+                         (env->start() < ends[i] && ends[i] < env->end()))
+                {
+                    throw std::runtime_error("Block can not cover the envelope! Block edge falls in env duration.");
+                }
+            }
+            if (!found)
+            {
+                throw std::runtime_error("There is env not in any block!");
+            }
+            break;
+        }
+        }
+        for (size_t i = 0; i < starts.size(); i++)
+        {
+            SP<AbstractEnvelope> splittedEnv_ = (*splittedEnvs)[i];
+            EnvType et = splittedEnv_->type_;
+            switch (et)
+            {
+            case EnvType::ENVSUM:
+            {
+                SP<EnvSum> envSum = std::dynamic_pointer_cast<EnvSum>(splittedEnv_);
+                if (envSum->envs.size() == 0)
+                {
+                    (*envSum) += (SP<AbstractEnvelope>)std::make_shared<Rect>(starts[i], 0.0, (REAL)0.0);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+    }
+    return splittedEnvs;
 }
 
 TP<double, ANY_VEC_SP, bool> decodeEnvelope(SP<AbstractEnvelope> &env, WaveCache &wc);

@@ -81,6 +81,15 @@ SP<AbstractEnvelope> pyAlign(SP<AbstractEnvelope> &env,
     return align<COMPLEX>(env, dt_vec, amp_vec);
 }
 
+VEC<SP<AbstractEnvelope>> pySplit(SP<AbstractEnvelope> &env,
+                                  py::array_t<double> &starts,
+                                  py::array_t<double> &ends)
+{
+    std::vector<double> starts_vec(starts.data(), starts.data() + starts.shape(0));
+    std::vector<double> ends_vec(ends.data(), ends.data() + ends.shape(0));
+    return *split(env, starts_vec, ends_vec);
+}
+
 PYBIND11_MODULE(envelopes_cpp, m)
 {
     m.doc() = "Envelops impelemented in C++.";
@@ -319,6 +328,8 @@ PYBIND11_MODULE(envelopes_cpp, m)
     m.def("align", py::overload_cast<SP<AbstractEnvelope> &, py::array_t<double> &, py::array_t<COMPLEX> &>(&pyAlign),
           py::arg("env"), py::arg("dt"), py::arg("amp"),
           "FAST aligning the envelope to the given time shifts and complex amplitudes.");
+    m.def("split", &pySplit, py::arg("env"), py::arg("starts"), py::arg("ends"),
+          "Split env according to starts and ends.\nThe provided starts and ends must be pre-sorted and have the same length.");
     m.def("mix", &mix, py::arg("env"), py::arg("df"), py::arg("phase"), py::arg("dynamical"),
           "FAST mixing the envelope by the given df and phase.\ndynamical=True means phase keeps 0 at t=0 (i.e. env * exp(i * (-2* pi * df * t + phase)).\ndynamical=False means phase keeps 0 at t=dt(env>>dt) (i.e. env * exp(i * (-2* pi * df * (t - dt) + phase)).");
 }

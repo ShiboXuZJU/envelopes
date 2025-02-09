@@ -123,3 +123,89 @@ def test_evc_decode_envelope_with_start_end():
     assert np.allclose(wave,
                        amp * np.exp(-(t - t0)**2 / 2 / sigma**2),
                        atol=ATOL)
+
+
+def test_evc_split():
+    wc = evc.WaveCache(0.5)
+    g = evc.Gaussian(0, 10, 0.5)
+    shifts = np.array([100.0, 200.0])
+    evl = evc.align(g, shifts)
+    start = evl.start()
+    end = evl.end()
+    spltted_evl = evc.split(evl, shifts - 50, shifts + 50)
+    assert np.allclose(np.array(evc.decode_envelope(g >> shifts[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evc.decode_envelope(spltted_evl[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+    assert np.allclose(np.array(evc.decode_envelope(g >> shifts[1], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evc.decode_envelope(spltted_evl[1], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+
+    evl = g >> 100
+    spltted_evl = evc.split(evl, shifts - 50, shifts + 50)
+    assert np.allclose(np.array(evc.decode_envelope(g >> shifts[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evc.decode_envelope(spltted_evl[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+    wave = np.array(evc.decode_envelope(spltted_evl[1], wc, start, end)[1],
+                    copy=False)
+    assert np.allclose(wave, np.zeros_like(wave), atol=ATOL)
+
+    try:
+        evc.split(evl, shifts + 1000, shifts + 1050)
+        raise ValueError("Last line should raise RuntimeError")
+    except RuntimeError:
+        pass
+
+
+def test_evp_split():
+    wc = evp.WaveCache(0.5)
+    g = evp.Gaussian(0, 10, 0.5)
+    shifts = np.array([100.0, 200.0])
+    evl = evp.align(g, shifts)
+    start = evl.start
+    end = evl.end
+    spltted_evl = evp.split(evl, shifts - 50, shifts + 50)
+    assert np.allclose(np.array(evp.decode_envelope(g >> shifts[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evp.decode_envelope(spltted_evl[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+    assert np.allclose(np.array(evp.decode_envelope(g >> shifts[1], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evp.decode_envelope(spltted_evl[1], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+
+    evl = g >> 100
+    spltted_evl = evp.split(evl, shifts - 50, shifts + 50)
+    assert np.allclose(np.array(evp.decode_envelope(g >> shifts[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       np.array(evp.decode_envelope(spltted_evl[0], wc, start,
+                                                    end)[1],
+                                copy=False),
+                       atol=ATOL)
+    wave = np.array(evp.decode_envelope(spltted_evl[1], wc, start, end)[1],
+                    copy=False)
+    assert np.allclose(wave, np.zeros_like(wave), atol=ATOL)
+
+    try:
+        evp.split(evl, shifts + 1000, shifts + 1050)
+        raise ValueError("Last line should raise RuntimeError")
+    except RuntimeError:
+        pass

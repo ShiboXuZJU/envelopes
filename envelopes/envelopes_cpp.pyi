@@ -10,6 +10,9 @@ class WaveCache:
     def __init__(self, resolution: float) -> None:
         ...
 
+    def resolution(self) -> float:
+        ...
+
 
 class AbstractEnvelope:
     ...
@@ -60,7 +63,11 @@ class RippleRect(Envelope):
 
 
 class EnvSum(AbstractEnvelope):
-    ...
+    def start(self) -> float:
+        ...
+
+    def end(self) -> float():
+        ...
 
 
 def decode_envelope(env: AbstractEnvelope,
