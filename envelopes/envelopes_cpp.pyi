@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import numpy as np
 
 
@@ -88,6 +88,11 @@ def deserialization(data: bytes) -> AbstractEnvelope:
 def align(env: AbstractEnvelope,
           dt: np.ndarray,
           amp: Optional[np.ndarray] = None) -> EnvSum:
+    ...
+
+
+def split(env: AbstractEnvelope, starts: np.ndarray,
+          ends: np.ndarray) -> List[AbstractEnvelope]:
     ...
 
 
