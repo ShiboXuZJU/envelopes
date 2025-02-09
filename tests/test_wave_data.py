@@ -167,6 +167,18 @@ def test_evc_split():
     except RuntimeError:
         pass
 
+    # If original envelope is complex, the splitted envelopes need to be complex as well.
+    evl = evc.Gaussian(shifts[0], 10, 0.5) + evc.GaussianDRAG(
+        shifts[1], 10, 0.2, 0.1, 0.1, 0.0)
+    spltted_evl = evc.split(evl, shifts - 50, shifts + 50)
+    for _evl in spltted_evl:
+        assert _evl.is_complex()
+
+    evl = evc.Gaussian(shifts[0], 10, 0.5) + evc.Gaussian(shifts[1], 10, 0.2)
+    spltted_evl = evc.split(evl, shifts - 50, shifts + 50)
+    for _evl in spltted_evl:
+        assert not _evl.is_complex()
+
 
 def test_evp_split():
     wc = evp.WaveCache(0.5)
@@ -209,3 +221,14 @@ def test_evp_split():
         raise ValueError("Last line should raise RuntimeError")
     except RuntimeError:
         pass
+
+    evl = evp.Gaussian(shifts[0], 10, 0.5) + evp.GaussianDRAG(
+        shifts[1], 10, 0.2, 0.1, 0.1, 0.0)
+    spltted_evl = evp.split(evl, shifts - 50, shifts + 50)
+    for _evl in spltted_evl:
+        assert _evl.is_complex
+
+    evl = evp.Gaussian(shifts[0], 10, 0.5) + evp.Gaussian(shifts[1], 10, 0.2)
+    spltted_evl = evp.split(evl, shifts - 50, shifts + 50)
+    for _evl in spltted_evl:
+        assert not _evl.is_complex

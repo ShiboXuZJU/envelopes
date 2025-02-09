@@ -1251,6 +1251,7 @@ SP<VEC<SP<AbstractEnvelope>>> split(SP<AbstractEnvelope> &env, VEC<double> &star
             break;
         }
         }
+        bool is_complex = env->is_complex();
         for (size_t i = 0; i < starts.size(); i++)
         {
             SP<AbstractEnvelope> splittedEnv_ = (*splittedEnvs)[i];
@@ -1262,12 +1263,17 @@ SP<VEC<SP<AbstractEnvelope>>> split(SP<AbstractEnvelope> &env, VEC<double> &star
                 SP<EnvSum> envSum = std::dynamic_pointer_cast<EnvSum>(splittedEnv_);
                 if (envSum->envs.size() == 0)
                 {
+                    SP<AbstractEnvelope> zero_ = std::make_shared<Rect>(starts[i], 0.0, (REAL)0.0);
                     (*envSum) += (SP<AbstractEnvelope>)std::make_shared<Rect>(starts[i], 0.0, (REAL)0.0);
                 }
                 break;
             }
             default:
                 break;
+            }
+            if (is_complex && !(splittedEnv_->is_complex()))
+            {
+                (*splittedEnvs)[i] = (*splittedEnv_) * COMPLEX(1.0, 0.0);
             }
         }
     }

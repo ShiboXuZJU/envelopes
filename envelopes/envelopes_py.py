@@ -716,9 +716,13 @@ def split(env: AbstractEnvelope, starts: List[float],
                     )
             if not found:
                 raise RuntimeError("There is env not in any block!")
-        for splitted_env, start in zip(splitted_envs, starts):
+        is_complex = env.is_complex
+        for idx, (splitted_env, start) in enumerate(zip(splitted_envs,
+                                                        starts)):
             if len(splitted_env.items) == 0:
                 splitted_env += Rect(start, 0.0, 0.0)
+            if is_complex and not splitted_env.is_complex:
+                splitted_envs[idx] = splitted_env * (1 + 0j)
     return splitted_envs
 
 

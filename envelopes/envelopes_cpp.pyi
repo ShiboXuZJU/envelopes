@@ -15,7 +15,14 @@ class WaveCache:
 
 
 class AbstractEnvelope:
-    ...
+    def start(self) -> float:
+        ...
+
+    def end(self) -> float():
+        ...
+
+    def is_complex(self) -> bool:
+        ...
 
 
 class Envelope:
@@ -63,11 +70,7 @@ class RippleRect(Envelope):
 
 
 class EnvSum(AbstractEnvelope):
-    def start(self) -> float:
-        ...
-
-    def end(self) -> float():
-        ...
+    ...
 
 
 def decode_envelope(env: AbstractEnvelope,
